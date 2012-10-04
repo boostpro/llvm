@@ -27,7 +27,8 @@ namespace CodeGen {
     /// EmitLexicalBlockEnd - Emit metadata to indicate the end of a new lexical
     /// block and pop the current block.
     void EmitLexicalBlockEnd(CGBuilderTy &Builder, SourceLocation Loc);
-    
+
+    void finalize();
   };
 }}
 #endif // CGDEBUGINFO_DWA2012104_H
