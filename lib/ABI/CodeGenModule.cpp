@@ -94,13 +94,6 @@ CodeGenModule::CodeGenModule(ASTContext &C, const CodeGenOptions &CGO,
     TBAA = new CodeGenTBAA(Context, VMContext, CodeGenOpts, getLangOpts(),
                            ABI.getMangleContext());
 
-  // If debug info or coverage generation is enabled, create the CGDebugInfo
-  // object.
-  if (CodeGenOpts.DebugInfo != CodeGenOptions::NoDebugInfo ||
-      CodeGenOpts.EmitGcovArcs ||
-      CodeGenOpts.EmitGcovNotes)
-    DebugInfo = new CGDebugInfo(*this);
-
   Block.GlobalUniqueCount = 0;
 
   if (C.getLangOpts().ObjCAutoRefCount)
