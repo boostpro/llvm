@@ -319,12 +319,6 @@ class CodeGenModule : public CodeGenTypeCache {
   
   /// @}
 
-  /// Lazily create the Objective-C runtime
-  void createObjCRuntime();
-
-  void createOpenCLRuntime();
-  void createCUDARuntime();
-
   bool isTriviallyRecursive(const FunctionDecl *F);
   bool shouldEmitFunction(const FunctionDecl *F);
   llvm::LLVMContext &VMContext;
@@ -361,7 +355,6 @@ public:
   /// getObjCRuntime() - Return a reference to the configured
   /// Objective-C runtime.
   CGObjCRuntime &getObjCRuntime() {
-    if (!ObjCRuntime) createObjCRuntime();
     return *ObjCRuntime;
   }
 

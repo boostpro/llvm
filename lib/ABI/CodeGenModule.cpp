@@ -81,19 +81,6 @@ CodeGenModule::CodeGenModule(ASTContext &C, const CodeGenOptions &CGO,
   Int8PtrTy = Int8Ty->getPointerTo(0);
   Int8PtrPtrTy = Int8PtrTy->getPointerTo(0);
 
-  if (LangOpts.ObjC1)
-    createObjCRuntime();
-  if (LangOpts.OpenCL)
-    createOpenCLRuntime();
-  if (LangOpts.CUDA)
-    createCUDARuntime();
-
-  // Enable TBAA unless it's suppressed. ThreadSanitizer needs TBAA even at O0.
-  if (LangOpts.ThreadSanitizer ||
-      (!CodeGenOpts.RelaxedAliasing && CodeGenOpts.OptimizationLevel > 0))
-    TBAA = new CodeGenTBAA(Context, VMContext, CodeGenOpts, getLangOpts(),
-                           ABI.getMangleContext());
-
   Block.GlobalUniqueCount = 0;
 
   if (C.getLangOpts().ObjCAutoRefCount)
@@ -102,42 +89,11 @@ CodeGenModule::CodeGenModule(ASTContext &C, const CodeGenOptions &CGO,
 }
 
 CodeGenModule::~CodeGenModule() {
-  delete ObjCRuntime;
-  delete OpenCLRuntime;
-  delete CUDARuntime;
   delete TheTargetCodeGenInfo;
   delete &ABI;
-  delete TBAA;
   delete DebugInfo;
   delete ARCData;
   delete RRData;
-}
-
-void CodeGenModule::createObjCRuntime() {
-  // This is just isGNUFamily(), but we want to force implementors of
-  // new ABIs to decide how best to do this.
-  switch (LangOpts.ObjCRuntime.getKind()) {
-  case ObjCRuntime::GNUstep:
-  case ObjCRuntime::GCC:
-  case ObjCRuntime::ObjFW:
-    ObjCRuntime = CreateGNUObjCRuntime(*this);
-    return;
-
-  case ObjCRuntime::FragileMacOSX:
-  case ObjCRuntime::MacOSX:
-  case ObjCRuntime::iOS:
-    ObjCRuntime = CreateMacObjCRuntime(*this);
-    return;
-  }
-  llvm_unreachable("bad runtime kind");
-}
-
-void CodeGenModule::createOpenCLRuntime() {
-  OpenCLRuntime = new CGOpenCLRuntime(*this);
-}
-
-void CodeGenModule::createCUDARuntime() {
-  CUDARuntime = CreateNVCUDARuntime(*this);
 }
 
 void CodeGenModule::Release() {
