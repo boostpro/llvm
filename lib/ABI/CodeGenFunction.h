@@ -68,6 +68,7 @@ namespace clang {
   class ObjCAtThrowStmt;
   class ObjCAtSynchronizedStmt;
   class ObjCAutoreleasePoolStmt;
+  class ObjCBoxedExpr;
 
 namespace CodeGen {
   class CodeGenTypes;
