@@ -13,4 +13,21 @@
 #ifndef CGDEBUGINFO_DWA2012104_H
 # define CGDEBUGINFO_DWA2012104_H
 
+# include "CGBuilder.h"
+
+namespace clang {
+namespace CodeGen {
+  class CGDebugInfo
+  {
+   public:
+    /// EmitLexicalBlockStart - Emit metadata to indicate the beginning of a
+    /// new lexical block and push the block onto the stack.
+    void EmitLexicalBlockStart(CGBuilderTy &Builder, SourceLocation Loc);
+
+    /// EmitLexicalBlockEnd - Emit metadata to indicate the end of a new lexical
+    /// block and pop the current block.
+    void EmitLexicalBlockEnd(CGBuilderTy &Builder, SourceLocation Loc);
+    
+  };
+}}
 #endif // CGDEBUGINFO_DWA2012104_H
