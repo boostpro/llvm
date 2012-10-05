@@ -13,8 +13,8 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#ifndef CLANG_BASIC_LLVM_H
-#define CLANG_BASIC_LLVM_H
+#ifndef LLVM_BASIC_LLVM_H
+#define LLVM_BASIC_LLVM_H
 
 // This should be the only #include, force #includes of all the others on
 // clients.
