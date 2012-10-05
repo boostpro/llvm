@@ -10,7 +10,7 @@
 #ifndef CLANG_CODEGEN_ABIINFO_H
 #define CLANG_CODEGEN_ABIINFO_H
 
-#include "LLVM.h"
+#include "ABI.h"
 #include "llvm/Type.h"
 
 namespace llvm {
