@@ -27,6 +27,7 @@ namespace CodeGen {
 class CodeGenVTables {
   CodeGenModule &CGM;
 
+#if 0 // TODO DWA
   VTableContext VTContext;
 
   /// VTables - All the vtables which have been defined.
@@ -67,10 +68,11 @@ class CodeGenVTables {
                                           unsigned NumComponents,
                                 const VTableLayout::VTableThunkTy *VTableThunks,
                                           unsigned NumVTableThunks);
-
+#endif 
 public:
   CodeGenVTables(CodeGenModule &CGM);
 
+#if 0 // TODO DWA
   VTableContext &getVTableContext() { return VTContext; }
 
   /// \brief True if the VTable of this record must be emitted in the
@@ -130,6 +132,7 @@ public:
   /// \param Linkage - The desired linkage of the vtable, the RTTI and the VTT.
   void GenerateClassData(llvm::GlobalVariable::LinkageTypes Linkage,
                          const CXXRecordDecl *RD);
+#endif 
 };
 
 } // end namespace CodeGen

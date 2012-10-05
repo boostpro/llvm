@@ -165,6 +165,7 @@ private:
   }
 
 public:
+#if 0 // TODO DWA
   bool isSimple() const { return LVType == Simple; }
   bool isVectorElt() const { return LVType == VectorElt; }
   bool isBitField() const { return LVType == BitField; }
@@ -304,6 +305,7 @@ public:
     // FIMXE: Alignment
     return RValue::getAggregate(getAddress(), isVolatileQualified());
   }
+#endif 
 };
 
 /// An aggregate value slot.
@@ -385,6 +387,7 @@ public:
     return AV;
   }
 
+#if 0 // TODO DWA
   static AggValueSlot forLValue(const LValue &LV,
                                 IsDestructed_t isDestructed,
                                 NeedsGCBarriers_t needsGC,
@@ -440,6 +443,7 @@ public:
   IsZeroed_t isZeroed() const {
     return IsZeroed_t(ZeroedFlag);
   }
+#endif 
 };
 
 }  // end namespace CodeGen
