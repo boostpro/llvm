@@ -71,4 +71,11 @@ namespace clang {
   using llvm::raw_ostream;
 } // end namespace clang.
 
+// Declarations of value types from clang used by ABI-level codegen
+namespace llvm_abi {
+
+class QualType {};
+class Type {};
+}
+
 #endif
