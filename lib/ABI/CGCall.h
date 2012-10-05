@@ -40,6 +40,7 @@ namespace clang {
   class VarDecl;
 
 namespace CodeGen {
+using llvm::SmallVector;
   typedef SmallVector<llvm::AttributeWithIndex, 8> AttributeListType;
 
   struct CallArg {
