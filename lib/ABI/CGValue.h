@@ -15,10 +15,6 @@
 #ifndef CLANG_CODEGEN_CGVALUE_H
 #define CLANG_CODEGEN_CGVALUE_H
 
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/CharUnits.h"
-#include "clang/AST/Type.h"
-
 namespace llvm {
   class Constant;
   class Value;

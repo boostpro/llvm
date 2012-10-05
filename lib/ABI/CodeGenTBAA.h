@@ -15,7 +15,7 @@
 #ifndef CLANG_CODEGEN_CODEGENTBAA_H
 #define CLANG_CODEGEN_CODEGENTBAA_H
 
-#include "clang/Basic/LLVM.h"
+#include "LLVM.h"
 #include "llvm/MDBuilder.h"
 #include "llvm/ADT/DenseMap.h"
 

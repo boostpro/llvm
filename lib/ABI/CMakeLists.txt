@@ -3,6 +3,7 @@ add_definitions(-Dclang=llvm_abi)
 add_llvm_library(LLVMABI
   CodeGenModule.cpp
 
+CGCleanup.cpp
 CGCUDARuntime.cpp
 CGCXXABI.cpp
 CGCall.cpp

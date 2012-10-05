@@ -17,8 +17,6 @@
 
 #include "llvm/ADT/FoldingSet.h"
 #include "llvm/Value.h"
-#include "clang/AST/Type.h"
-#include "clang/AST/CanonicalType.h"
 
 #include "CGValue.h"
 

@@ -16,11 +16,6 @@
 
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/GlobalVariable.h"
-#include "clang/Basic/ABI.h"
-#include "clang/AST/BaseSubobject.h"
-#include "clang/AST/CharUnits.h"
-#include "clang/AST/GlobalDecl.h"
-#include "clang/AST/VTableBuilder.h"
 
 namespace clang {
   class CXXRecordDecl;

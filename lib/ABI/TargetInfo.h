@@ -15,8 +15,7 @@
 #ifndef CLANG_CODEGEN_TARGETINFO_H
 #define CLANG_CODEGEN_TARGETINFO_H
 
-#include "clang/Basic/LLVM.h"
-#include "clang/AST/Type.h"
+#include "LLVM.h"
 #include "llvm/ADT/StringRef.h"
 
 namespace llvm {
