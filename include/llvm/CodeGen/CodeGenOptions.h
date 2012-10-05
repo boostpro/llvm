@@ -14,6 +14,9 @@
 #ifndef LLVM_CODEGENOPTIONS_H
 #define LLVM_CODEGENOPTIONS_H
 
+#include <string>
+#include <vector>
+
 namespace llvm {
   
 /// CodeGenOptions - Track various options which control how the code
