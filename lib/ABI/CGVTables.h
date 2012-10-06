@@ -14,7 +14,7 @@
 #ifndef CLANG_CODEGEN_CGVTABLE_H
 #define CLANG_CODEGEN_CGVTABLE_H
 
-#include "ABI.h"
+#include "ClangABI.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/GlobalVariable.h"
 
