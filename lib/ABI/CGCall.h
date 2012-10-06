@@ -17,6 +17,7 @@
 
 #include "llvm/ADT/FoldingSet.h"
 #include "llvm/Value.h"
+#include "llvm/ADT/ArrayRef.h"
 
 #include "CGValue.h"
 
@@ -111,6 +112,7 @@ using llvm::SmallVector;
       assert(n != ~0U);
     }
 
+#if 0 // TODO DWA
     /// Compute the arguments required by the given formal prototype,
     /// given that there may be some additional, non-formal arguments
     /// in play.
@@ -144,6 +146,7 @@ using llvm::SmallVector;
       if (value == ~0U) return All;
       return RequiredArgs(value);
     }
+#endif 
   };
 
   /// FunctionArgList - Type for representing both the decl and type
@@ -210,7 +213,10 @@ using llvm::SmallVector;
 
     unsigned  arg_size() const { return NumArgs; }
 
-    bool isVariadic() const { return Required.allowsOptionalArgs(); }
+      bool isVariadic() const;
+#if 0 // TODO DWA
+      { return Required.allowsOptionalArgs(); }
+#endif 
     RequiredArgs getRequiredArgs() const { return Required; }
 
     bool isNoReturn() const { return NoReturn; }
@@ -242,10 +248,15 @@ using llvm::SmallVector;
     unsigned getRegParm() const { return RegParm; }
 
     FunctionType::ExtInfo getExtInfo() const {
-      return FunctionType::ExtInfo(isNoReturn(),
+      return FunctionType::ExtInfo
+#if 0 // TODO DWA
+        (isNoReturn(),
                                    getHasRegParm(), getRegParm(),
                                    getASTCallingConvention(),
                                    isReturnsRetained());
+#else
+      ();
+#endif 
     }
 
     CanQualType getReturnType() const { return getArgsBuffer()[0].type; }
@@ -254,6 +265,7 @@ using llvm::SmallVector;
     const ABIArgInfo &getReturnInfo() const { return getArgsBuffer()[0].info; }
 
     void Profile(llvm::FoldingSetNodeID &ID) {
+#if 0 // TODO DWA
       ID.AddInteger(getASTCallingConvention());
       ID.AddBoolean(NoReturn);
       ID.AddBoolean(ReturnsRetained);
@@ -263,12 +275,14 @@ using llvm::SmallVector;
       getReturnType().Profile(ID);
       for (arg_iterator it = arg_begin(), ie = arg_end(); it != ie; ++it)
         it->type.Profile(ID);
+#endif 
     }
     static void Profile(llvm::FoldingSetNodeID &ID,
                         const FunctionType::ExtInfo &info,
                         RequiredArgs required,
                         CanQualType resultType,
                         ArrayRef<CanQualType> argTypes) {
+#if 0 // TODO DWA
       ID.AddInteger(info.getCC());
       ID.AddBoolean(info.getNoReturn());
       ID.AddBoolean(info.getProducesResult());
@@ -280,6 +294,7 @@ using llvm::SmallVector;
              i = argTypes.begin(), e = argTypes.end(); i != e; ++i) {
         i->Profile(ID);
       }
+#endif 
     }
   };
   
