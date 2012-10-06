@@ -18,6 +18,8 @@
 #include "llvm/Module.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/SmallPtrSet.h"
+#include "llvm/ABI/ABI.h"
+
 #include <vector>
 
 namespace llvm {
@@ -40,6 +42,7 @@ namespace clang {
   using llvm::CodeGenOptions;
   class FieldDecl;
   class FunctionProtoType;
+  class FunctionNoProtoType;
   class ObjCInterfaceDecl;
   class ObjCIvarDecl;
   class PointerType;
