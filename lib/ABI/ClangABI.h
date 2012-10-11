@@ -31,7 +31,10 @@ class Qualifiers
     bool hasVolatile() const;
     bool hasRestrict() const;
 };
-class QualType {};
+class QualType {
+public:
+  enum DestructionKind {};
+};
 class Type {};
   template <typename> class CanQual {};
   typedef CanQual<Type> CanQualType;
@@ -65,6 +68,10 @@ class FunctionType
   class ObjCInterfaceType;
 
   class GlobalDecl {};
+
+  class SourceLocation {};
+  class SourceRange {};
+  
 }
 
 #endif // ABI_DWA2012105_H
