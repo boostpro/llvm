@@ -1060,22 +1060,6 @@ public:
       return OpaqueValueMappingData::shouldBindAsLValue(expr);
     }
 
-    /// Build the opaque value mapping for the given conditional
-    /// operator if it's the GNU ?: extension.  This is a common
-    /// enough pattern that the convenience operator is really
-    /// helpful.
-    ///
-    OpaqueValueMapping(CodeGenFunction &CGF,
-                       const AbstractConditionalOperator *op) : CGF(CGF) {
-      if (isa<ConditionalOperator>(op))
-        // Leave Data empty.
-        return;
-
-      const BinaryConditionalOperator *e = cast<BinaryConditionalOperator>(op);
-      Data = OpaqueValueMappingData::bind(CGF, e->getOpaqueValue(),
-                                          e->getCommon());
-    }
-
     OpaqueValueMapping(CodeGenFunction &CGF,
                        const OpaqueValueExpr *opaqueValue,
                        LValue lvalue)
@@ -1368,11 +1352,6 @@ public:
     return BlockPointer;
   }
 
-  void AllocateBlockCXXThisPointer(const CXXThisExpr *E);
-  void AllocateBlockDecl(const DeclRefExpr *E);
-  llvm::Value *GetAddrOfBlockDecl(const VarDecl *var, bool ByRef);
-  llvm::Type *BuildByRefType(const VarDecl *var);
-
   void GenerateCode(GlobalDecl GD, llvm::Function *Fn,
                     const CGFunctionInfo &FnInfo);
   void StartFunction(GlobalDecl GD, QualType RetTy,
@@ -1482,10 +1461,7 @@ public:
 
   llvm::Type *ConvertTypeForMem(QualType T);
   llvm::Type *ConvertType(QualType T);
-  llvm::Type *ConvertType(const TypeDecl *T) {
-    return ConvertType(getContext().getTypeDeclType(T));
-  }
-
+  
   /// LoadObjCSelf - Load the value of self. This function is only valid while
   /// generating code for an Objective-C method.
   llvm::Value *LoadObjCSelf();
@@ -1724,13 +1700,6 @@ public:
   /// This function can be called with a null (unreachable) insert point.
   void EmitVariablyModifiedType(QualType Ty);
 
-  /// getVLASize - Returns an LLVM value that corresponds to the size,
-  /// in non-variably-sized elements, of a variable length array type,
-  /// plus that largest non-variably-sized element type.  Assumes that
-  /// the type has already been emitted with EmitVariablyModifiedType.
-  std::pair<llvm::Value*,QualType> getVLASize(const VariableArrayType *vla);
-  std::pair<llvm::Value*,QualType> getVLASize(QualType vla);
-
   /// LoadCXXThis - Load the value of 'this'. This function is only valid while
   /// generating code for an C++ member function.
   llvm::Value *LoadCXXThis() {
@@ -1812,9 +1781,6 @@ public:
   void EmitNewArrayInitializer(const CXXNewExpr *E, QualType elementType,
                                llvm::Value *NewPtr, llvm::Value *NumElements);
 
-  void EmitCXXTemporary(const CXXTemporary *Temporary, QualType TempType,
-                        llvm::Value *Ptr);
-
   llvm::Value *EmitCXXNewExpr(const CXXNewExpr *E);
   void EmitCXXDeleteExpr(const CXXDeleteExpr *E);
 
@@ -1852,10 +1818,6 @@ public:
   void EmitTypeCheck(TypeCheckKind TCK, llvm::Value *V,
                      QualType Type, CharUnits Alignment = CharUnits::Zero());
 
-  llvm::Value *EmitScalarPrePostIncDec(const UnaryOperator *E, LValue LV,
-                                       bool isInc, bool isPre);
-  ComplexPairTy EmitComplexPrePostIncDec(const UnaryOperator *E, LValue LV,
-                                         bool isInc, bool isPre);
   //===--------------------------------------------------------------------===//
   //                            Declaration Emission
   //===--------------------------------------------------------------------===//
@@ -1973,36 +1935,6 @@ public:
   /// \return True if the statement was handled.
   bool EmitSimpleStmt(const Stmt *S);
 
-  RValue EmitCompoundStmt(const CompoundStmt &S, bool GetLast = false,
-                          AggValueSlot AVS = AggValueSlot::ignored());
-
-  /// EmitLabel - Emit the block for the given label. It is legal to call this
-  /// function even if there is no current insertion point.
-  void EmitLabel(const LabelDecl *D); // helper for EmitLabelStmt.
-
-  void EmitLabelStmt(const LabelStmt &S);
-  void EmitAttributedStmt(const AttributedStmt &S);
-  void EmitGotoStmt(const GotoStmt &S);
-  void EmitIndirectGotoStmt(const IndirectGotoStmt &S);
-  void EmitIfStmt(const IfStmt &S);
-  void EmitWhileStmt(const WhileStmt &S);
-  void EmitDoStmt(const DoStmt &S);
-  void EmitForStmt(const ForStmt &S);
-  void EmitReturnStmt(const ReturnStmt &S);
-  void EmitDeclStmt(const DeclStmt &S);
-  void EmitBreakStmt(const BreakStmt &S);
-  void EmitContinueStmt(const ContinueStmt &S);
-  void EmitSwitchStmt(const SwitchStmt &S);
-  void EmitDefaultStmt(const DefaultStmt &S);
-  void EmitCaseStmt(const CaseStmt &S);
-  void EmitCaseStmtRange(const CaseStmt &S);
-  void EmitAsmStmt(const AsmStmt &S);
-
-  void EmitObjCForCollectionStmt(const ObjCForCollectionStmt &S);
-  void EmitObjCAtTryStmt(const ObjCAtTryStmt &S);
-  void EmitObjCAtThrowStmt(const ObjCAtThrowStmt &S);
-  void EmitObjCAtSynchronizedStmt(const ObjCAtSynchronizedStmt &S);
-  void EmitObjCAutoreleasePoolStmt(const ObjCAutoreleasePoolStmt &S);
 
   llvm::Constant *getUnwindResumeFn();
   llvm::Constant *getUnwindResumeOrRethrowFn();
@@ -2010,7 +1942,6 @@ public:
   void ExitCXXTryStmt(const CXXTryStmt &S, bool IsFnTryBlock = false);
 
   void EmitCXXTryStmt(const CXXTryStmt &S);
-  void EmitCXXForRangeStmt(const CXXForRangeStmt &S);
 
   //===--------------------------------------------------------------------===//
   //                         LValue Expression Emission
@@ -2112,32 +2043,18 @@ public:
 
   /// Emit an l-value for an assignment (simple or compound) of complex type.
   LValue EmitComplexAssignmentLValue(const BinaryOperator *E);
-  LValue EmitComplexCompoundAssignmentLValue(const CompoundAssignOperator *E);
-
-  // Note: only available for agg return types
-  LValue EmitBinaryOperatorLValue(const BinaryOperator *E);
-  LValue EmitCompoundAssignmentLValue(const CompoundAssignOperator *E);
+  
   // Note: only available for agg return types
   LValue EmitCallExprLValue(const CallExpr *E);
   // Note: only available for agg return types
   LValue EmitVAArgExprLValue(const VAArgExpr *E);
-  LValue EmitDeclRefLValue(const DeclRefExpr *E);
   LValue EmitStringLiteralLValue(const StringLiteral *E);
-  LValue EmitObjCEncodeExprLValue(const ObjCEncodeExpr *E);
-  LValue EmitPredefinedLValue(const PredefinedExpr *E);
-  LValue EmitUnaryOpLValue(const UnaryOperator *E);
-  LValue EmitArraySubscriptExpr(const ArraySubscriptExpr *E);
-  LValue EmitExtVectorElementExpr(const ExtVectorElementExpr *E);
+
   LValue EmitMemberExpr(const MemberExpr *E);
   LValue EmitObjCIsaExpr(const ObjCIsaExpr *E);
-  LValue EmitCompoundLiteralLValue(const CompoundLiteralExpr *E);
-  LValue EmitInitListLValue(const InitListExpr *E);
-  LValue EmitConditionalOperatorLValue(const AbstractConditionalOperator *E);
-  LValue EmitCastLValue(const CastExpr *E);
-  LValue EmitNullInitializationLValue(const CXXScalarValueInitExpr *E);
-  LValue EmitMaterializeTemporaryExpr(const MaterializeTemporaryExpr *E);
-  LValue EmitOpaqueValueLValue(const OpaqueValueExpr *e);
 
+  LValue EmitCastLValue(const CastExpr *E);
+  
   RValue EmitRValueForField(LValue LV, const FieldDecl *FD);
 
   class ConstantEmission {
@@ -2168,14 +2085,6 @@ public:
     }
   };
 
-  ConstantEmission tryEmitAsConstant(DeclRefExpr *refExpr);
-
-  RValue EmitPseudoObjectRValue(const PseudoObjectExpr *e,
-                                AggValueSlot slot = AggValueSlot::ignored());
-  LValue EmitPseudoObjectLValue(const PseudoObjectExpr *e);
-
-  llvm::Value *EmitIvarOffset(const ObjCInterfaceDecl *Interface,
-                              const ObjCIvarDecl *Ivar);
   LValue EmitLValueForField(LValue Base, const FieldDecl* Field);
 
   /// EmitLValueForFieldInitialization - Like EmitLValueForField, except that
@@ -2184,21 +2093,14 @@ public:
   LValue EmitLValueForFieldInitialization(LValue Base,
                                           const FieldDecl* Field);
 
-  LValue EmitLValueForIvar(QualType ObjectTy,
-                           llvm::Value* Base, const ObjCIvarDecl *Ivar,
-                           unsigned CVRQualifiers);
-
   LValue EmitCXXConstructLValue(const CXXConstructExpr *E);
-  LValue EmitCXXBindTemporaryLValue(const CXXBindTemporaryExpr *E);
-  LValue EmitLambdaLValue(const LambdaExpr *E);
   LValue EmitCXXTypeidLValue(const CXXTypeidExpr *E);
 
   LValue EmitObjCMessageExprLValue(const ObjCMessageExpr *E);
-  LValue EmitObjCIvarRefLValue(const ObjCIvarRefExpr *E);
-  LValue EmitStmtExprLValue(const StmtExpr *E);
+#if 0 // DWA TODO
   LValue EmitPointerToDataMemberBinaryExpr(const BinaryOperator *E);
-  LValue EmitObjCSelectorLValue(const ObjCSelectorExpr *E);
   void   EmitDeclRefExprDbgValue(const DeclRefExpr *E, llvm::Constant *Init);
+#endif 
 
   //===--------------------------------------------------------------------===//
   //                         Scalar Expression Emission

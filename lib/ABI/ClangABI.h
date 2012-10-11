@@ -71,7 +71,27 @@ class FunctionType
 
   class SourceLocation {};
   class SourceRange {};
-  
+
+  class BlockDecl;
+  class LinkageSpecDecl;
+  class OpaqueValueExpr;
+  class ImplicitParamDecl;
+  class BaseSubobject {};
+  class CastExpr { public: class path_const_iterator {}; };
+  class CallExpr { public: class const_arg_iterator {}; };
+  class ConstantArrayType;
+  class CXXNewExpr;
+  class CXXDeleteExpr;
+  class CXXTypeidExpr;
+  class CXXDynamicCastExpr;
+  class CXXTryStmt;
+  class VAArgExpr;
+  class MemberExpr;
+  class ObjCIsaExpr;
+  class CXXConstructExpr;
+  class ObjCMessageExpr;
+  class NestedNameSpecifier;
+  class CXXMemberCallExpr;
 }
 
 #endif // ABI_DWA2012105_H

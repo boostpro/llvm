@@ -388,22 +388,6 @@ public:
     return *RRData;
   }
 
-  llvm::Constant *getStaticLocalDeclAddress(const VarDecl *D) {
-    return StaticLocalDeclMap[D];
-  }
-  void setStaticLocalDeclAddress(const VarDecl *D, 
-                                 llvm::Constant *C) {
-    StaticLocalDeclMap[D] = C;
-  }
-
-  llvm::GlobalVariable *getStaticLocalDeclGuardAddress(const VarDecl *D) {
-    return StaticLocalDeclGuardMap[D];
-  }
-  void setStaticLocalDeclGuardAddress(const VarDecl *D, 
-                                      llvm::GlobalVariable *C) {
-    StaticLocalDeclGuardMap[D] = C;
-  }
-
   llvm::Constant *getAtomicSetterHelperFnMap(QualType Ty) {
     return AtomicSetterHelperFnMap[Ty];
   }
@@ -638,10 +622,6 @@ public:
                                            const char *GlobalName=0,
                                            unsigned Alignment=1);
 
-  /// GetAddrOfConstantCompoundLiteral - Returns a pointer to a constant global
-  /// variable for the given file-scope compound literal expression.
-  llvm::Constant *GetAddrOfConstantCompoundLiteral(const CompoundLiteralExpr*E);
-  
   /// \brief Retrieve the record type that describes the state of an
   /// Objective-C fast enumeration loop (for..in).
   QualType getObjCFastEnumerationStateType();
@@ -708,56 +688,8 @@ public:
   // UpdateCompleteType - Make sure that this type is translated.
   void UpdateCompletedType(const TagDecl *TD);
 
-  llvm::Constant *getMemberPointerConstant(const UnaryOperator *e);
-
-  /// EmitConstantInit - Try to emit the initializer for the given declaration
-  /// as a constant; returns 0 if the expression cannot be emitted as a
-  /// constant.
-  llvm::Constant *EmitConstantInit(const VarDecl &D, CodeGenFunction *CGF = 0);
-
-  /// EmitConstantExpr - Try to emit the given expression as a
-  /// constant; returns 0 if the expression cannot be emitted as a
-  /// constant.
-  llvm::Constant *EmitConstantExpr(const Expr *E, QualType DestType,
-                                   CodeGenFunction *CGF = 0);
-
-  /// EmitConstantValue - Emit the given constant value as a constant, in the
-  /// type's scalar representation.
-  llvm::Constant *EmitConstantValue(const APValue &Value, QualType DestType,
-                                    CodeGenFunction *CGF = 0);
-
-  /// EmitConstantValueForMemory - Emit the given constant value as a constant,
-  /// in the type's memory representation.
-  llvm::Constant *EmitConstantValueForMemory(const APValue &Value,
-                                             QualType DestType,
-                                             CodeGenFunction *CGF = 0);
-
-  /// EmitNullConstant - Return the result of value-initializing the given
-  /// type, i.e. a null expression of the given type.  This is usually,
-  /// but not always, an LLVM null constant.
-  llvm::Constant *EmitNullConstant(QualType T);
-
-  /// EmitNullConstantForBase - Return a null constant appropriate for 
-  /// zero-initializing a base class with the given type.  This is usually,
-  /// but not always, an LLVM null constant.
-  llvm::Constant *EmitNullConstantForBase(const CXXRecordDecl *Record);
-
   /// Error - Emit a general error that something can't be done.
   void Error(SourceLocation loc, StringRef error);
-
-  /// ErrorUnsupported - Print out an error that codegen doesn't support the
-  /// specified stmt yet.
-  /// \param OmitOnError - If true, then this error should only be emitted if no
-  /// other errors have been reported.
-  void ErrorUnsupported(const Stmt *S, const char *Type,
-                        bool OmitOnError=false);
-
-  /// ErrorUnsupported - Print out an error that codegen doesn't support the
-  /// specified decl yet.
-  /// \param OmitOnError - If true, then this error should only be emitted if no
-  /// other errors have been reported.
-  void ErrorUnsupported(const Decl *D, const char *Type,
-                        bool OmitOnError=false);
 
   /// SetInternalFunctionAttributes - Set the attributes on the LLVM
   /// function for the given decl and function info. This applies
@@ -910,7 +842,6 @@ private:
   bool TryEmitDefinitionAsAlias(GlobalDecl Alias, GlobalDecl Target);
   bool TryEmitBaseDestructorAsAlias(const CXXDestructorDecl *D);
 
-  void EmitNamespace(const NamespaceDecl *D);
   void EmitLinkageSpec(const LinkageSpecDecl *D);
 
   /// EmitCXXConstructors - Emit constructors (base, complete) from a
