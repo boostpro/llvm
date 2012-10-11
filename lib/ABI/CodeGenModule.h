@@ -54,7 +54,6 @@ namespace clang {
   class ValueDecl;
   class VarDecl;
   class LangOptions;
-  class CodeGenOptions;
   class DiagnosticsEngine;
   class AnnotateAttr;
   class CXXDestructorDecl;
@@ -377,11 +376,13 @@ public:
   /// getCXXABI() - Return a reference to the configured C++ ABI.
   CGCXXABI &getCXXABI() { return ABI; }
 
+#if 0 // TODO DWA
   ARCEntrypoints &getARCEntrypoints() const {
     assert(getLangOpts().ObjCAutoRefCount && ARCData != 0);
     return *ARCData;
   }
-
+#endif
+  
   RREntrypoints &getRREntrypoints() const {
     assert(RRData != 0);
     return *RRData;
@@ -435,10 +436,14 @@ public:
   llvm::Module &getModule() const { return TheModule; }
   CodeGenTypes &getTypes() { return Types; }
   CodeGenVTables &getVTables() { return VTables; }
+#if 0 // TODO DWA
   VTableContext &getVTableContext() { return VTables.getVTableContext(); }
+#endif 
   DiagnosticsEngine &getDiags() const { return Diags; }
   const llvm::TargetData &getTargetData() const { return TheTargetData; }
+#if 0 // TODO DWA
   const TargetInfo &getTarget() const { return Context.getTargetInfo(); }
+#endif 
   llvm::LLVMContext &getLLVMContext() { return VMContext; }
   const TargetCodeGenInfo &getTargetCodeGenInfo();
   bool isTargetDarwin() const;
@@ -479,16 +484,8 @@ public:
   void setTypeVisibility(llvm::GlobalValue *GV, const CXXRecordDecl *D,
                          TypeVisibilityKind TVK) const;
 
-  static llvm::GlobalValue::VisibilityTypes GetLLVMVisibility(Visibility V) {
-    switch (V) {
-    case DefaultVisibility:   return llvm::GlobalValue::DefaultVisibility;
-    case HiddenVisibility:    return llvm::GlobalValue::HiddenVisibility;
-    case ProtectedVisibility: return llvm::GlobalValue::ProtectedVisibility;
-    }
-    llvm_unreachable("unknown visibility!");
-  }
-
   llvm::Constant *GetAddrOfGlobal(GlobalDecl GD) {
+#if 0 // TODO DWA
     if (isa<CXXConstructorDecl>(GD.getDecl()))
       return GetAddrOfCXXConstructor(cast<CXXConstructorDecl>(GD.getDecl()),
                                      GD.getCtorType());
@@ -499,6 +496,9 @@ public:
       return GetAddrOfFunction(GD);
     else
       return GetAddrOfGlobalVar(cast<VarDecl>(GD.getDecl()));
+#else
+  return 0;
+#endif 
   }
 
   /// CreateOrReplaceCXXRuntimeVariable - Will return a global variable of the given
@@ -540,13 +540,15 @@ public:
   /// GetWeakRefReference - Get a reference to the target of VD.
   llvm::Constant *GetWeakRefReference(const ValueDecl *VD);
 
+#if 0 // TODO DWA
   /// GetNonVirtualBaseClassOffset - Returns the offset from a derived class to 
   /// a class. Returns null if the offset is 0. 
   llvm::Constant *
   GetNonVirtualBaseClassOffset(const CXXRecordDecl *ClassDecl,
                                CastExpr::path_const_iterator PathBegin,
                                CastExpr::path_const_iterator PathEnd);
-
+#endif
+  
   /// A pair of helper functions for a __block variable.
   class ByrefHelpers : public llvm::FoldingSetNode {
   public:
