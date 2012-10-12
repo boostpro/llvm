@@ -95,6 +95,36 @@ class CharUnits
 };
   class MangleContext;
 
+/// \brief The types of C++ ABIs for which we can generate code.
+enum TargetCXXABI {
+  /// The generic ("Itanium") C++ ABI, documented at:
+  ///   http://www.codesourcery.com/public/cxx-abi/
+  CXXABI_Itanium,
+
+  /// The ARM C++ ABI, based largely on the Itanium ABI but with
+  /// significant differences.
+  ///    http://infocenter.arm.com
+  ///                    /help/topic/com.arm.doc.ihi0041c/IHI0041C_cppabi.pdf
+  CXXABI_ARM,
+
+  /// The Visual Studio ABI.  Only scattered official documentation exists.
+  CXXABI_Microsoft
+};
+  
+  class TargetInfo {
+ public:
+    class  ConstraintInfo {};
+    TargetCXXABI getCXXABI() const;
+    uint64_t getPointerWidth(unsigned AddrSpace) const;
+    uint64_t getPointerAlign(unsigned AddrSpace) const;
+  };
+  
+  class LangOptions
+  {
+ public:
+    bool Exceptions;
+  };
+  
 class ASTContext
 {
 public:
@@ -102,7 +132,10 @@ public:
   CanQualType getCanonicalType(QualType T) const;
   const Type *getCanonicalType(const Type *T) const;
   MangleContext *createMangleContext();
-};
+  const TargetInfo& getTargetInfo() const;
+  const LangOptions &getLangOpts() const;
+  CharUnits toCharUnitsFromBits(int64_t BitSize) const;
+  };
 
 class FunctionType
 {
@@ -206,16 +239,9 @@ public:
   class CXXThrowExpr;
   class AtomicExpr;
   class APValue;
-  class TargetInfo { public: class  ConstraintInfo {}; };
 
   class MemberPointerType;
   
-  class LangOptions
-  {
- public:
-    bool Exceptions;
-  };
-
   class Decl {};
   class ValueDecl : public Decl {};
   class VarDecl : public ValueDecl {
