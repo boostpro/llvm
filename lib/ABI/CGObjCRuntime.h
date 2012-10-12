@@ -142,8 +142,10 @@ public:
   virtual void GenerateClass(const ObjCImplementationDecl *OID) = 0;
 
   /// Register an class alias.
+#if 0
   virtual void RegisterAlias(const ObjCCompatibleAliasDecl *OAD) = 0;
-
+#endif
+  
   /// Generate an Objective-C message send operation.
   ///
   /// \param Method - The method being called, this may be null if synthesizing

@@ -42,8 +42,14 @@ class Qualifiers
     friend bool operator!=(ptr_archetype const&, ptr_archetype const&);
   };
 
-class Type {};
-
+class Type
+{
+public:
+  bool isPointerType() const;
+  bool isVariableArrayType() const;
+  template <typename T> T* getAs() const;
+};
+  
 class QualType : public ptr_archetype<QualType, Type> {
 public:
   enum DestructionKind {
@@ -52,10 +58,34 @@ public:
     DK_objc_strong_lifetime,
     DK_objc_weak_lifetime
   };
+  QualType getNonReferenceType() const;
 };
-  template <typename> class CanQual {};
+
+  class PointerType : public Type
+  {
+ public:
+    QualType getPointeeType() const;
+  };
+  
+class Expr
+{
+public:
+  QualType getType() const;
+};
+  
+class VariableArrayType
+{
+public:
+  Expr* getSizeExpr() const;
+};
+  
+  template <typename> class CanQual
+  {
+ public:
+    Type* getTypePtr() const;
+  };
+  
   typedef CanQual<Type> CanQualType;
-class Expr;
 class CharUnits
 {
  public:
@@ -63,7 +93,16 @@ class CharUnits
     QuantityType getQuantity() const;
   static CharUnits Zero();
 };
-class ASTContext {};
+  class MangleContext;
+
+class ASTContext
+{
+public:
+  const VariableArrayType *getAsVariableArrayType(QualType T);
+  CanQualType getCanonicalType(QualType T) const;
+  const Type *getCanonicalType(const Type *T) const;
+  MangleContext *createMangleContext();
+};
 
 class FunctionType
 {
@@ -126,8 +165,8 @@ public:
   class ImplicitParamDecl;
   class BaseSubobject {};
 
-  template <class It>
-  struct iterator_archetype : ptr_archetype<It>
+  template <class It, class ValueType = It>
+  struct iterator_archetype : ptr_archetype<It, ValueType>
   {
     It& operator++();
     It operator++(int);
@@ -142,9 +181,10 @@ public:
   
   class CallExpr {
  public:
-    struct const_arg_iterator : iterator_archetype<const_arg_iterator>
+    struct const_arg_iterator : iterator_archetype<const_arg_iterator,Expr*>
     {
       QualType getType() const;
+      Expr* operator->() const; // EVIL
     };
   };
   class ConstantArrayType;
@@ -165,8 +205,11 @@ public:
   class ExprWithCleanups;
   class CXXThrowExpr;
   class AtomicExpr;
+  class APValue;
   class TargetInfo { public: class  ConstraintInfo {}; };
 
+  class MemberPointerType;
+  
   class LangOptions
   {
  public:
