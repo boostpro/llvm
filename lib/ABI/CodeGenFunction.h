@@ -975,6 +975,7 @@ public:
     PeepholeProtection() : Inst(0) {}
   };
 
+#if 0
   /// A non-RAII class containing all the information about a bound
   /// opaque value.  OpaqueValueMapping, below, is a RAII wrapper for
   /// this which makes individual mappings very simple; using this
@@ -1081,6 +1082,7 @@ public:
       if (Data.isValid()) Data.unbind(CGF);
     }
   };
+#endif 
   
   /// getByrefValueFieldNumber - Given a declaration, returns the LLVM field
   /// number that holds the value.
@@ -1542,18 +1544,20 @@ public:
   //===--------------------------------------------------------------------===//
 
   LValue MakeAddrLValue(llvm::Value *V, QualType T,
-                        CharUnits Alignment = CharUnits()) {
+                        CharUnits Alignment = CharUnits());/* {
     return LValue::MakeAddr(V, T, Alignment, getContext(),
                             CGM.getTBAAInfo(T));
   }
+                                                           */
 
-  LValue MakeNaturalAlignAddrLValue(llvm::Value *V, QualType T) {
+  LValue MakeNaturalAlignAddrLValue(llvm::Value *V, QualType T);/* {
     CharUnits Alignment;
     if (!T->isIncompleteType())
       Alignment = getContext().getTypeAlignInChars(T);
     return LValue::MakeAddr(V, T, Alignment, getContext(),
                             CGM.getTBAAInfo(T));
   }
+                                                                */
 
   /// CreateTempAlloca - This creates a alloca and inserts it into the entry
   /// block. The caller is responsible for setting an appropriate alignment on
@@ -1577,7 +1581,7 @@ public:
 
   /// CreateAggTemp - Create a temporary memory object for the given
   /// aggregate type.
-  AggValueSlot CreateAggTemp(QualType T, const Twine &Name = "tmp") {
+  AggValueSlot CreateAggTemp(QualType T, const Twine &Name = "tmp"); /*{
     CharUnits Alignment = getContext().getTypeAlignInChars(T);
     return AggValueSlot::forAddr(CreateMemTemp(T, Name), Alignment,
                                  T.getQualifiers(),
@@ -1585,7 +1589,7 @@ public:
                                  AggValueSlot::DoesNotNeedGCBarriers,
                                  AggValueSlot::IsNotAliased);
   }
-
+                                                                     */
   /// Emit a cast to void* in the appropriate address space.
   llvm::Value *EmitCastToVoidPtr(llvm::Value *value);
 
@@ -1651,7 +1655,9 @@ public:
   /// getOpaqueLValueMapping - Given an opaque value expression (which
   /// must be mapped to an l-value), return its mapping.
   const LValue &getOpaqueLValueMapping(const OpaqueValueExpr *e) {
+#if 0 // DWA TODO
     assert(OpaqueValueMapping::shouldBindAsLValue(e));
+#endif 
 
     llvm::DenseMap<const OpaqueValueExpr*,LValue>::iterator
       it = OpaqueLValues.find(e);
@@ -1662,7 +1668,9 @@ public:
   /// getOpaqueRValueMapping - Given an opaque value expression (which
   /// must be mapped to an r-value), return its mapping.
   const RValue &getOpaqueRValueMapping(const OpaqueValueExpr *e) {
+#if 0 // DWA TODO
     assert(!OpaqueValueMapping::shouldBindAsLValue(e));
+#endif 
 
     llvm::DenseMap<const OpaqueValueExpr*,RValue>::iterator
       it = OpaqueRValues.find(e);
@@ -2073,12 +2081,12 @@ public:
     operator bool() const { return ValueAndIsReference.getOpaqueValue() != 0; }
 
     bool isReference() const { return ValueAndIsReference.getInt(); }
-    LValue getReferenceLValue(CodeGenFunction &CGF, Expr *refExpr) const {
+    LValue getReferenceLValue(CodeGenFunction &CGF, Expr *refExpr) const;/* {
       assert(isReference());
       return CGF.MakeNaturalAlignAddrLValue(ValueAndIsReference.getPointer(),
                                             refExpr->getType());
     }
-
+*/
     llvm::Constant *getValue() const {
       assert(!isReference());
       return ValueAndIsReference.getPointer();
@@ -2190,14 +2198,6 @@ public:
   llvm::Value *EmitX86BuiltinExpr(unsigned BuiltinID, const CallExpr *E);
   llvm::Value *EmitPPCBuiltinExpr(unsigned BuiltinID, const CallExpr *E);
 
-  llvm::Value *EmitObjCProtocolExpr(const ObjCProtocolExpr *E);
-  llvm::Value *EmitObjCStringLiteral(const ObjCStringLiteral *E);
-  llvm::Value *EmitObjCBoxedExpr(const ObjCBoxedExpr *E);
-  llvm::Value *EmitObjCArrayLiteral(const ObjCArrayLiteral *E);
-  llvm::Value *EmitObjCDictionaryLiteral(const ObjCDictionaryLiteral *E);
-  llvm::Value *EmitObjCCollectionLiteral(const Expr *E,
-                                const ObjCMethodDecl *MethodWithObjects);
-  llvm::Value *EmitObjCSelectorExpr(const ObjCSelectorExpr *E);
   RValue EmitObjCMessageExpr(const ObjCMessageExpr *E,
                              ReturnValueSlot Return = ReturnValueSlot());
 
@@ -2374,14 +2374,14 @@ public:
                                   const Expr *Exp);
 
   void enterFullExpression(const ExprWithCleanups *E) {
+#if 0 // TODO DWA
     if (E->getNumObjects() == 0) return;
+#endif 
     enterNonTrivialFullExpression(E);
   }
   void enterNonTrivialFullExpression(const ExprWithCleanups *E);
 
   void EmitCXXThrowExpr(const CXXThrowExpr *E);
-
-  void EmitLambdaExpr(const LambdaExpr *E, AggValueSlot Dest);
 
   RValue EmitAtomicExpr(AtomicExpr *E, llvm::Value *Dest = 0);
 

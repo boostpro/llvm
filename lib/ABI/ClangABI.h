@@ -16,6 +16,7 @@
 # define ABI_DWA2012105_H
 
 #include "llvm/Support/DataTypes.h"
+#include <string>
 
 namespace llvm {}
 
@@ -31,9 +32,24 @@ class Qualifiers
     bool hasVolatile() const;
     bool hasRestrict() const;
 };
-class QualType {
+
+  template <class Ptr, class ValueType = Ptr>
+  struct ptr_archetype
+  {
+    ValueType& operator*() const;
+    ValueType* operator->() const;
+    friend bool operator==(ptr_archetype const&, ptr_archetype const&);
+    friend bool operator!=(ptr_archetype const&, ptr_archetype const&);
+  };
+  
+class QualType : public ptr_archetype<QualType, llvm::Type> {
 public:
-  enum DestructionKind {};
+  enum DestructionKind {
+    DK_none,
+    DK_cxx_destructor,
+    DK_objc_strong_lifetime,
+    DK_objc_weak_lifetime
+  };
 };
 class Type {};
   template <typename> class CanQual {};
@@ -44,6 +60,7 @@ class CharUnits
  public:
     typedef int64_t QuantityType;
     QuantityType getQuantity() const;
+  static CharUnits Zero();
 };
 class ASTContext {};
 
@@ -69,16 +86,66 @@ class FunctionType
 
   class GlobalDecl {};
 
-  class SourceLocation {};
-  class SourceRange {};
+  class SourceLocation {
+ public:
+    bool isValid() const;
+    friend bool operator==(const SourceLocation&, const SourceLocation&);
+    friend bool operator!=(const SourceLocation&, const SourceLocation&);
+  };
+  
+class SourceRange {
+  SourceLocation B;
+  SourceLocation E;
+public:
+  SourceRange(): B(SourceLocation()), E(SourceLocation()) {}
+  SourceRange(SourceLocation loc) : B(loc), E(loc) {}
+  SourceRange(SourceLocation begin, SourceLocation end) : B(begin), E(end) {}
+
+  SourceLocation getBegin() const { return B; }
+  SourceLocation getEnd() const { return E; }
+
+  void setBegin(SourceLocation b) { B = b; }
+  void setEnd(SourceLocation e) { E = e; }
+
+  bool isValid() const { return B.isValid() && E.isValid(); }
+  bool isInvalid() const { return !isValid(); }
+
+  bool operator==(const SourceRange &X) const {
+    return B == X.B && E == X.E;
+  }
+
+  bool operator!=(const SourceRange &X) const {
+    return B != X.B || E != X.E;
+  }
+};
 
   class BlockDecl;
   class LinkageSpecDecl;
   class OpaqueValueExpr;
   class ImplicitParamDecl;
   class BaseSubobject {};
-  class CastExpr { public: class path_const_iterator {}; };
-  class CallExpr { public: class const_arg_iterator {}; };
+
+  template <class It>
+  struct iterator_archetype : ptr_archetype<It>
+  {
+    It& operator++();
+    It operator++(int);
+  };
+  
+  class CastExpr {
+ public:
+    struct path_const_iterator : iterator_archetype<path_const_iterator>
+    {
+    };
+  };
+  
+  class CallExpr {
+ public:
+    struct const_arg_iterator : iterator_archetype<const_arg_iterator>
+    {
+      QualType getType() const;
+    };
+  };
   class ConstantArrayType;
   class CXXNewExpr;
   class CXXDeleteExpr;
@@ -92,6 +159,25 @@ class FunctionType
   class ObjCMessageExpr;
   class NestedNameSpecifier;
   class CXXMemberCallExpr;
+  class CXXOperatorCallExpr;
+  class CUDAKernelCallExpr;
+  class ExprWithCleanups;
+  class CXXThrowExpr;
+  class AtomicExpr;
+  class TargetInfo { public: class  ConstraintInfo {}; };
+
+  class LangOptions
+  {
+ public:
+    bool Exceptions;
+  };
+
+  class Decl {};
+  class ValueDecl : public Decl {};
+  class VarDecl : public ValueDecl {
+ public:
+    std::string getNameAsString() const;
+  };
 }
 
 #endif // ABI_DWA2012105_H
