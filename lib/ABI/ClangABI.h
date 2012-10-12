@@ -41,8 +41,10 @@ class Qualifiers
     friend bool operator==(ptr_archetype const&, ptr_archetype const&);
     friend bool operator!=(ptr_archetype const&, ptr_archetype const&);
   };
-  
-class QualType : public ptr_archetype<QualType, llvm::Type> {
+
+class Type {};
+
+class QualType : public ptr_archetype<QualType, Type> {
 public:
   enum DestructionKind {
     DK_none,
@@ -51,7 +53,6 @@ public:
     DK_objc_weak_lifetime
   };
 };
-class Type {};
   template <typename> class CanQual {};
   typedef CanQual<Type> CanQualType;
 class Expr;
