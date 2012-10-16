@@ -677,7 +677,7 @@ computeCrossBlockCriticalPath(const TraceBlockInfo &TBI) {
     const MachineInstr *DefMI = MTM.MRI->getVRegDef(LIR.Reg);
     // Ignore dependencies outside the current trace.
     const TraceBlockInfo &DefTBI = BlockInfo[DefMI->getParent()->getNumber()];
-    if (!DefTBI.hasValidDepth() || DefTBI.Head != TBI.Head)
+    if (!DefTBI.isEarlierInSameTrace(TBI))
       continue;
     unsigned Len = LIR.Height + Cycles[DefMI].Depth;
     MaxLen = std::max(MaxLen, Len);
@@ -740,7 +740,7 @@ computeInstrDepths(const MachineBasicBlock *MBB) {
         const TraceBlockInfo&DepTBI =
           BlockInfo[Dep.DefMI->getParent()->getNumber()];
         // Ignore dependencies from outside the current trace.
-        if (!DepTBI.hasValidDepth() || DepTBI.Head != TBI.Head)
+        if (!DepTBI.isEarlierInSameTrace(TBI))
           continue;
         assert(DepTBI.HasValidInstrDepths && "Inconsistent dependency");
         unsigned DepCycle = Cycles.lookup(Dep.DefMI).Depth;
@@ -850,14 +850,14 @@ static bool pushDepHeight(const DataDep &Dep,
   return false;
 }
 
-/// Assuming that DefMI was used by Trace.back(), add it to the live-in lists
-/// of all the blocks in Trace. Stop when reaching the block that contains
-/// DefMI.
+/// Assuming that the virtual register defined by DefMI:DefOp was used by
+/// Trace.back(), add it to the live-in lists of all the blocks in Trace. Stop
+/// when reaching the block that contains DefMI.
 void MachineTraceMetrics::Ensemble::
-addLiveIns(const MachineInstr *DefMI,
+addLiveIns(const MachineInstr *DefMI, unsigned DefOp,
            ArrayRef<const MachineBasicBlock*> Trace) {
   assert(!Trace.empty() && "Trace should contain at least one block");
-  unsigned Reg = DefMI->getOperand(0).getReg();
+  unsigned Reg = DefMI->getOperand(DefOp).getReg();
   assert(TargetRegisterInfo::isVirtualRegister(Reg));
   const MachineBasicBlock *DefMBB = DefMI->getParent();
 
@@ -950,7 +950,7 @@ computeInstrHeights(const MachineBasicBlock *MBB) {
           DEBUG(dbgs() << "pred\t" << Height << '\t' << *PHI);
           if (pushDepHeight(Deps.front(), PHI, Height,
                             Heights, MTM.SchedModel, MTM.TII))
-            addLiveIns(Deps.front().DefMI, Stack);
+            addLiveIns(Deps.front().DefMI, Deps.front().DefOp, Stack);
         }
       }
     }
@@ -983,7 +983,7 @@ computeInstrHeights(const MachineBasicBlock *MBB) {
       // Update the required height of any virtual registers read by MI.
       for (unsigned i = 0, e = Deps.size(); i != e; ++i)
         if (pushDepHeight(Deps[i], MI, Cycle, Heights, MTM.SchedModel, MTM.TII))
-          addLiveIns(Deps[i].DefMI, Stack);
+          addLiveIns(Deps[i].DefMI, Deps[i].DefOp, Stack);
 
       InstrCycles &MICycles = Cycles[MI];
       MICycles.Height = Cycle;

@@ -42,7 +42,7 @@
 #include "llvm/MC/MCStreamer.h"
 #include "llvm/MC/MCSymbol.h"
 #include "llvm/Target/Mangler.h"
-#include "llvm/Target/TargetData.h"
+#include "llvm/DataLayout.h"
 #include "llvm/Target/TargetMachine.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Debug.h"
@@ -303,7 +303,7 @@ void ARMAsmPrinter::EmitFunctionEntryLabel() {
 }
 
 void ARMAsmPrinter::EmitXXStructor(const Constant *CV) {
-  uint64_t Size = TM.getTargetData()->getTypeAllocSize(CV->getType());
+  uint64_t Size = TM.getDataLayout()->getTypeAllocSize(CV->getType());
   assert(Size && "C++ constructor pointer had zero size!");
 
   const GlobalValue *GV = dyn_cast<GlobalValue>(CV->stripPointerCasts());
@@ -388,16 +388,6 @@ void ARMAsmPrinter::printOperand(const MachineInstr *MI, int OpNum,
 }
 
 //===--------------------------------------------------------------------===//
-
-MCSymbol *ARMAsmPrinter::
-GetARMSetPICJumpTableLabel2(unsigned uid, unsigned uid2,
-                            const MachineBasicBlock *MBB) const {
-  SmallString<60> Name;
-  raw_svector_ostream(Name) << MAI->getPrivateGlobalPrefix()
-    << getFunctionNumber() << '_' << uid << '_' << uid2
-    << "_set_" << MBB->getNumber();
-  return OutContext.GetOrCreateSymbol(Name.str());
-}
 
 MCSymbol *ARMAsmPrinter::
 GetARMJTIPICJumpTableLabel2(unsigned uid, unsigned uid2) const {
@@ -909,7 +899,7 @@ MCSymbol *ARMAsmPrinter::GetARMGVSymbol(const GlobalValue *GV) {
 
 void ARMAsmPrinter::
 EmitMachineConstantPoolValue(MachineConstantPoolValue *MCPV) {
-  int Size = TM.getTargetData()->getTypeAllocSize(MCPV->getType());
+  int Size = TM.getDataLayout()->getTypeAllocSize(MCPV->getType());
 
   ARMConstantPoolValue *ACPV = static_cast<ARMConstantPoolValue*>(MCPV);
 
@@ -1105,16 +1095,6 @@ static void populateADROperands(MCInst &Inst, unsigned Dest,
   // Add predicate operands.
   Inst.addOperand(MCOperand::CreateImm(pred));
   Inst.addOperand(MCOperand::CreateReg(ccreg));
-}
-
-void ARMAsmPrinter::EmitPatchedInstruction(const MachineInstr *MI,
-                                           unsigned Opcode) {
-  MCInst TmpInst;
-
-  // Emit the instruction as usual, just patch the opcode.
-  LowerARMMachineInstrToMCInst(MI, TmpInst, *this);
-  TmpInst.setOpcode(Opcode);
-  OutStreamer.EmitInstruction(TmpInst);
 }
 
 void ARMAsmPrinter::EmitUnwindingInstruction(const MachineInstr *MI) {

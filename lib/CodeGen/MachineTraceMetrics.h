@@ -165,6 +165,14 @@ public:
     /// Invalidate height resources when a block below this one has changed.
     void invalidateHeight() { InstrHeight = ~0u; HasValidInstrHeights = false; }
 
+    /// Determine if this block belongs to the same trace as TBI and comes
+    /// before it in the trace.
+    /// Also returns true when TBI == this.
+    bool isEarlierInSameTrace(const TraceBlockInfo &TBI) const {
+      return hasValidDepth() && TBI.hasValidDepth() &&
+        Head == TBI.Head && InstrDepth <= TBI.InstrDepth;
+    }
+
     // Data-dependency-related information. Per-instruction depth and height
     // are computed from data dependencies in the current trace, using
     // itinerary data.
@@ -271,7 +279,7 @@ public:
     unsigned computeCrossBlockCriticalPath(const TraceBlockInfo&);
     void computeInstrDepths(const MachineBasicBlock*);
     void computeInstrHeights(const MachineBasicBlock*);
-    void addLiveIns(const MachineInstr *DefMI,
+    void addLiveIns(const MachineInstr *DefMI, unsigned DefOp,
                     ArrayRef<const MachineBasicBlock*> Trace);
 
   protected:

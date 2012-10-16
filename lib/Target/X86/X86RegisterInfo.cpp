@@ -261,6 +261,11 @@ X86RegisterInfo::getCallPreservedMask(CallingConv::ID CC) const {
   return CSR_64_RegMask;
 }
 
+const uint32_t*
+X86RegisterInfo::getNoPreservedMask() const {
+  return CSR_NoRegs_RegMask;
+}
+
 BitVector X86RegisterInfo::getReservedRegs(const MachineFunction &MF) const {
   BitVector Reserved(getNumRegs());
   const TargetFrameLowering *TFI = MF.getTarget().getFrameLowering();
@@ -382,8 +387,9 @@ bool X86RegisterInfo::needsStackRealignment(const MachineFunction &MF) const {
   const MachineFrameInfo *MFI = MF.getFrameInfo();
   const Function *F = MF.getFunction();
   unsigned StackAlign = TM.getFrameLowering()->getStackAlignment();
-  bool requiresRealignment = ((MFI->getMaxAlignment() > StackAlign) ||
-                               F->getFnAttributes().hasStackAlignmentAttr());
+  bool requiresRealignment =
+    ((MFI->getMaxAlignment() > StackAlign) ||
+     F->getFnAttributes().hasAttribute(Attributes::StackAlignment));
 
   // If we've requested that we force align the stack do so now.
   if (ForceStackAlign)

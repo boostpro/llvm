@@ -208,8 +208,6 @@ std::auto_ptr<PBQPRAProblem> PBQPBuilder::build(MachineFunction *mf,
     mri->setPhysRegUsed(Reg);
   }
 
-  BitVector reservedRegs = tri->getReservedRegs(*mf);
-
   // Iterate over vregs.
   for (RegSet::const_iterator vregItr = vregs.begin(), vregEnd = vregs.end();
        vregItr != vregEnd; ++vregItr) {
@@ -218,7 +216,7 @@ std::auto_ptr<PBQPRAProblem> PBQPBuilder::build(MachineFunction *mf,
     LiveInterval *vregLI = &LIS->getInterval(vreg);
 
     // Record any overlaps with regmask operands.
-    BitVector regMaskOverlaps(tri->getNumRegs());
+    BitVector regMaskOverlaps;
     LIS->checkRegMaskInterference(*vregLI, regMaskOverlaps);
 
     // Compute an initial allowed set for the current vreg.
@@ -227,11 +225,11 @@ std::auto_ptr<PBQPRAProblem> PBQPBuilder::build(MachineFunction *mf,
     ArrayRef<uint16_t> rawOrder = trc->getRawAllocationOrder(*mf);
     for (unsigned i = 0; i != rawOrder.size(); ++i) {
       unsigned preg = rawOrder[i];
-      if (reservedRegs.test(preg))
+      if (mri->isReserved(preg))
         continue;
 
       // vregLI crosses a regmask operand that clobbers preg.
-      if (!regMaskOverlaps.empty() && regMaskOverlaps.test(preg))
+      if (!regMaskOverlaps.empty() && !regMaskOverlaps.test(preg))
         continue;
 
       // vregLI overlaps fixed regunit interference.
@@ -357,7 +355,7 @@ std::auto_ptr<PBQPRAProblem> PBQPBuilderWithCoalescing::build(
                                                    loopInfo->getLoopDepth(mbb));
 
       if (cp.isPhys()) {
-        if (!lis->isAllocatable(dst)) {
+        if (!mf->getRegInfo().isAllocatable(dst)) {
           continue;
         }
 
