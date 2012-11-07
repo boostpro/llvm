@@ -36,8 +36,11 @@ private:
   void *operator new(size_t, unsigned) LLVM_DELETED_FUNCTION;
   void *operator new(size_t s) LLVM_DELETED_FUNCTION;
   Operator() LLVM_DELETED_FUNCTION;
-  // NOTE: cannot use LLVM_DELETED_FUNCTION because gcc errors when deleting
-  // an override of a non-deleted function.
+
+protected:
+  // NOTE: Cannot use LLVM_DELETED_FUNCTION because it's not legal to delete
+  // an overridden method that's not deleted in the base class. Cannot leave
+  // this unimplemented because that leads to an ODR-violation.
   ~Operator();
 
 public:
@@ -79,8 +82,6 @@ public:
   };
 
 private:
-  ~OverflowingBinaryOperator(); // DO NOT IMPLEMENT
-
   friend class BinaryOperator;
   friend class ConstantExpr;
   void setHasNoUnsignedWrap(bool B) {
@@ -132,8 +133,6 @@ public:
   };
   
 private:
-  ~PossiblyExactOperator(); // DO NOT IMPLEMENT
-
   friend class BinaryOperator;
   friend class ConstantExpr;
   void setIsExact(bool B) {
@@ -168,9 +167,6 @@ public:
 /// FPMathOperator - Utility class for floating point operations which can have
 /// information about relaxed accuracy requirements attached to them.
 class FPMathOperator : public Operator {
-private:
-  ~FPMathOperator(); // DO NOT IMPLEMENT
-
 public:
 
   /// \brief Get the maximum error permitted by this operation in ULPs.  An
@@ -191,7 +187,6 @@ public:
 /// opcodes.
 template<typename SuperClass, unsigned Opc>
 class ConcreteOperator : public SuperClass {
-  ~ConcreteOperator() LLVM_DELETED_FUNCTION;
 public:
   static inline bool classof(const Instruction *I) {
     return I->getOpcode() == Opc;
@@ -207,45 +202,35 @@ public:
 
 class AddOperator
   : public ConcreteOperator<OverflowingBinaryOperator, Instruction::Add> {
-  ~AddOperator() LLVM_DELETED_FUNCTION;
 };
 class SubOperator
   : public ConcreteOperator<OverflowingBinaryOperator, Instruction::Sub> {
-  ~SubOperator() LLVM_DELETED_FUNCTION;
 };
 class MulOperator
   : public ConcreteOperator<OverflowingBinaryOperator, Instruction::Mul> {
-  ~MulOperator() LLVM_DELETED_FUNCTION;
 };
 class ShlOperator
   : public ConcreteOperator<OverflowingBinaryOperator, Instruction::Shl> {
-  ~ShlOperator() LLVM_DELETED_FUNCTION;
 };
 
-  
+
 class SDivOperator
   : public ConcreteOperator<PossiblyExactOperator, Instruction::SDiv> {
-  ~SDivOperator() LLVM_DELETED_FUNCTION;
 };
 class UDivOperator
   : public ConcreteOperator<PossiblyExactOperator, Instruction::UDiv> {
-  ~UDivOperator() LLVM_DELETED_FUNCTION;
 };
 class AShrOperator
   : public ConcreteOperator<PossiblyExactOperator, Instruction::AShr> {
-  ~AShrOperator() LLVM_DELETED_FUNCTION;
 };
 class LShrOperator
   : public ConcreteOperator<PossiblyExactOperator, Instruction::LShr> {
-  ~LShrOperator() LLVM_DELETED_FUNCTION;
 };
-  
-  
-  
+
+
+
 class GEPOperator
   : public ConcreteOperator<Operator, Instruction::GetElementPtr> {
-  ~GEPOperator() LLVM_DELETED_FUNCTION;
-
   enum {
     IsInBounds = (1 << 0)
   };

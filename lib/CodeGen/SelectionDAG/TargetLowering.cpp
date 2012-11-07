@@ -583,6 +583,11 @@ TargetLowering::TargetLowering(const TargetMachine &tm,
   // Default ISD::TRAP to expand (which turns it into abort).
   setOperationAction(ISD::TRAP, MVT::Other, Expand);
 
+  // On most systems, DEBUGTRAP and TRAP have no difference. The "Expand"
+  // here is to inform DAG Legalizer to replace DEBUGTRAP with TRAP.
+  //
+  setOperationAction(ISD::DEBUGTRAP, MVT::Other, Expand);
+
   IsLittleEndian = TD->isLittleEndian();
   PointerTy = MVT::getIntegerVT(8*TD->getPointerSize(0));
   memset(RegClassForVT, 0,MVT::LAST_VALUETYPE*sizeof(TargetRegisterClass*));
@@ -1027,7 +1032,7 @@ void llvm::GetReturnInfo(Type* ReturnType, Attributes attr,
       Flags.setZExt();
 
     for (unsigned i = 0; i < NumParts; ++i)
-      Outs.push_back(ISD::OutputArg(Flags, PartVT, /*isFixed=*/true));
+      Outs.push_back(ISD::OutputArg(Flags, PartVT, /*isFixed=*/true, 0, 0));
   }
 }
 

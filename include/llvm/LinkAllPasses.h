@@ -60,6 +60,7 @@ namespace {
       (void) llvm::createCFGSimplificationPass();
       (void) llvm::createConstantMergePass();
       (void) llvm::createConstantPropagationPass();
+      (void) llvm::createCostModelAnalysisPass();
       (void) llvm::createDeadArgEliminationPass();
       (void) llvm::createDeadCodeEliminationPass();
       (void) llvm::createDeadInstEliminationPass();
@@ -82,11 +83,10 @@ namespace {
       (void) llvm::createIPSCCPPass();
       (void) llvm::createIndVarSimplifyPass();
       (void) llvm::createInstructionCombiningPass();
-      (void) llvm::createInternalizePass(false);
+      (void) llvm::createInternalizePass();
       (void) llvm::createLCSSAPass();
       (void) llvm::createLICMPass();
       (void) llvm::createLazyValueInfoPass();
-      (void) llvm::createLoopDependenceAnalysisPass();
       (void) llvm::createLoopExtractorPass();
       (void) llvm::createLoopSimplifyPass();
       (void) llvm::createLoopStrengthReducePass();
@@ -156,6 +156,7 @@ namespace {
       (void) llvm::createCorrelatedValuePropagationPass();
       (void) llvm::createMemDepPrinter();
       (void) llvm::createInstructionSimplifierPass();
+      (void) llvm::createLoopVectorizePass();
       (void) llvm::createBBVectorizePass();
 
       (void)new llvm::IntervalPartition();
